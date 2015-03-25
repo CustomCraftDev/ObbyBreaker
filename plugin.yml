@@ -1,0 +1,9 @@
+name: ObbyBreaker
+main: ObbyBreaker
+description: adds explosive TNT
+version: 1.0
+author: undeaD_D
+commands:
+  obbybreaker:
+    usage: /obbybreaker get <amount>
+    description: cheat some ObbyTNT
