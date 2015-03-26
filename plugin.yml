@@ -1,7 +1,7 @@
 name: ObbyBreaker
 main: ObbyBreaker
 description: adds explosive TNT
-version: 1.0
+version: 1.1
 author: undeaD_D
 commands:
   obbybreaker:
