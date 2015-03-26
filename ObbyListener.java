@@ -4,6 +4,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 
 
 public class ObbyListener implements Listener{
@@ -25,6 +26,14 @@ public class ObbyListener implements Listener{
 		}
 	}
 		
+
+	@EventHandler
+	public void onPlayerPickup(PlayerPickupItemEvent e){
+		if(e.getItem().getItemStack().isSimilar(plugin.nopickup)) {
+				e.setCancelled(true);
+		}
+	}
+	
 	
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e){
