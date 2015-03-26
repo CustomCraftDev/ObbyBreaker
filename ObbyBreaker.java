@@ -1,18 +1,22 @@
 import java.util.Arrays;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
+
 public class ObbyBreaker extends JavaPlugin {
 	protected ItemStack item;
+	protected ItemStack nopickup;
 	
 	
 	public void onEnable() {
@@ -23,6 +27,11 @@ public class ObbyBreaker extends JavaPlugin {
 			m.setLore(Arrays.asList(ChatColor.GRAY + "Right Click To Throw!"));
 		item.setItemMeta(m);
 		item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
+		
+		nopickup = new ItemStack(Material.TNT, 1);
+		ItemMeta n = item.getItemMeta();
+			n.setDisplayName("NOPICKUP");
+		item.setItemMeta(n);
 		
 		ShapedRecipe recipe = new ShapedRecipe(item);
 		recipe.shape("ABA", "BCB", "ABA");
@@ -62,9 +71,24 @@ public class ObbyBreaker extends JavaPlugin {
 	
 	
 	public void throwTNT(Player player) {
-		// TODO handle tnt and explosion ...
+		Location loc = player.getLocation();
 		
+		Item dropped = player.getWorld().dropItem(loc, nopickup);
+		dropped.setVelocity(player.getLocation().getDirection().add(dropped.getVelocity().setX(dropped.getVelocity().getX())).add(dropped.getVelocity().setZ(dropped.getVelocity().getZ())));
 		
+		execute(dropped);
+		
+		if(player.getItemInHand().getAmount() == 1) {
+			player.setItemInHand(new ItemStack(Material.AIR));
+		}else {
+			player.getItemInHand().setAmount(player.getItemInHand().getAmount()-1);
+		}
+		
+	}
+
+
+	private void execute(Item dropped) {
+		// TODO Handle TNT explosion etc ...
 		
 	}
 		
