@@ -1,11 +1,16 @@
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -73,10 +78,8 @@ public class ObbyBreaker extends JavaPlugin {
 	public void throwTNT(Player player) {
 		Location loc = player.getLocation();
 		
-		Item dropped = player.getWorld().dropItem(loc, nopickup);
+		final Item dropped = player.getWorld().dropItem(loc, nopickup);
 		dropped.setVelocity(player.getLocation().getDirection().add(dropped.getVelocity().setX(dropped.getVelocity().getX())).add(dropped.getVelocity().setZ(dropped.getVelocity().getZ())));
-		
-		execute(dropped);
 		
 		if(player.getItemInHand().getAmount() == 1) {
 			player.setItemInHand(new ItemStack(Material.AIR));
@@ -84,12 +87,52 @@ public class ObbyBreaker extends JavaPlugin {
 			player.getItemInHand().setAmount(player.getItemInHand().getAmount()-1);
 		}
 		
+		(new Thread() {
+			  public void run() {
+				  try {
+				    tell(dropped, "The TNT will explode in 5");
+				    Thread.sleep(400);
+				    tell(dropped, "4");
+				    Thread.sleep(400);
+				    tell(dropped, "3");
+				    Thread.sleep(400);
+				    tell(dropped, "2");
+				    Thread.sleep(400);
+				    tell(dropped, "1");
+				    Thread.sleep(400);
+				    
+				    Location loc = dropped.getLocation();
+				    loc.getWorld().createExplosion(loc, 1F, false);
+				    
+				    int radius = 3;
+		            for (int x = ((int) loc.getX()) - radius; x < ((int) loc.getX()) + radius; x++)
+		            {
+		                for (int y = ((int) loc.getY()) - radius; y < ((int) loc.getY()) + radius; y++)
+		                {
+		                    for (int z = ((int) loc.getZ()) - radius; z < ((int) loc.getZ()) + radius; z++)
+		                    {
+		                        if(loc.getWorld().getBlockAt(x,y,z).getType().equals(Material.OBSIDIAN)){
+		                        	loc.getWorld().getBlockAt(x,y,z).breakNaturally();
+		                        }
+		                    }
+		                }
+		            }
+				    
+				    dropped.remove();
+				  }catch(Exception e) {}
+			  }
+		}).start();
+				
 	}
 
 
-	private void execute(Item dropped) {
-		// TODO Handle TNT explosion etc ...
-		
+	private void tell(Item dropped, String msg) {
+		List<Entity> nearby =  dropped.getNearbyEntities(10,5,10);
+		for (Entity tmp: nearby) {
+		   if (tmp instanceof Player) {
+		      ((Player) tmp).sendMessage(msg);
+		   }
+		}
 	}
 		
 	
