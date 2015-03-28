@@ -1,16 +1,10 @@
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
 import org.bukkit.ChatColor;
-import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -22,10 +16,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class ObbyBreaker extends JavaPlugin {
 	protected ItemStack item;
 	protected ItemStack nopickup;
-	
+		private boolean createfire = false;
+		private boolean destroyother = false;
+		private boolean droppobsidian = true;
+		private int radius = 4;
+		private long countdown = 80L;
 	
 	public void onEnable() {
-		
 		item = new ItemStack(Material.TNT,1);
 		ItemMeta m = item.getItemMeta();
 			m.setDisplayName(ChatColor.DARK_RED + "ObbyBreaker");
@@ -34,9 +31,10 @@ public class ObbyBreaker extends JavaPlugin {
 		item.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 		
 		nopickup = new ItemStack(Material.TNT, 1);
-		ItemMeta n = item.getItemMeta();
+		ItemMeta n = nopickup.getItemMeta();
 			n.setDisplayName("NOPICKUP");
-		item.setItemMeta(n);
+		nopickup.setItemMeta(n);
+		nopickup.addUnsafeEnchantment(Enchantment.DURABILITY, 10);
 		
 		ShapedRecipe recipe = new ShapedRecipe(item);
 		recipe.shape("ABA", "BCB", "ABA");
@@ -87,53 +85,24 @@ public class ObbyBreaker extends JavaPlugin {
 			player.getItemInHand().setAmount(player.getItemInHand().getAmount()-1);
 		}
 		
-		(new Thread() {
-			  public void run() {
-				  try {
-				    tell(dropped, "The TNT will explode in 5");
-				    Thread.sleep(400);
-				    tell(dropped, "4");
-				    Thread.sleep(400);
-				    tell(dropped, "3");
-				    Thread.sleep(400);
-				    tell(dropped, "2");
-				    Thread.sleep(400);
-				    tell(dropped, "1");
-				    Thread.sleep(400);
-				    
-				    Location loc = dropped.getLocation();
-				    loc.getWorld().createExplosion(loc, 1F, false);
-				    
-				    int radius = 3;
-		            for (int x = ((int) loc.getX()) - radius; x < ((int) loc.getX()) + radius; x++)
+			getServer().getScheduler().scheduleSyncDelayedTask(this, new Runnable() { public void run() {
+			    Location loc = dropped.getLocation().getBlock().getLocation();
+			    loc.getWorld().createExplosion(loc.getX(),loc.getY(),loc.getZ(), 3F, createfire, destroyother);
+	            for (int x = ((int) loc.getX()) - radius; x < ((int) loc.getX()) + radius; x++)
 		            {
 		                for (int y = ((int) loc.getY()) - radius; y < ((int) loc.getY()) + radius; y++)
 		                {
 		                    for (int z = ((int) loc.getZ()) - radius; z < ((int) loc.getZ()) + radius; z++)
 		                    {
-		                        if(loc.getWorld().getBlockAt(x,y,z).getType().equals(Material.OBSIDIAN)){
-		                        	loc.getWorld().getBlockAt(x,y,z).breakNaturally();
+		                        if(loc.getWorld().getBlockAt(x,y,z).getType() == Material.OBSIDIAN){
+		                        	if(droppobsidian){loc.getWorld().getBlockAt(x,y,z).breakNaturally();}else{loc.getWorld().getBlockAt(x,y,z).setType(Material.AIR);}
 		                        }
 		                    }
 		                }
 		            }
-				    
-				    dropped.remove();
-				  }catch(Exception e) {}
-			  }
-		}).start();
-				
+			    dropped.remove();
+			}}, countdown);			
 	}
-
-
-	private void tell(Item dropped, String msg) {
-		List<Entity> nearby =  dropped.getNearbyEntities(10,5,10);
-		for (Entity tmp: nearby) {
-		   if (tmp instanceof Player) {
-		      ((Player) tmp).sendMessage(msg);
-		   }
-		}
-	}
-		
+	
 	
 }
